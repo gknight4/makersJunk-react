@@ -28,6 +28,11 @@
   color: #61dafb;
 }
 
+.background{
+  background-image: url('./grBack2.jpg');
+  background-size:cover;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

@@ -1,5 +1,10 @@
 import React from 'react';
 import {Link} from 'react-router-dom'
+import Form from 'react-bootstrap/Form'
+import Button from 'react-bootstrap/Button';
+import Nav from 'react-bootstrap/Nav';
+import Alert from 'react-bootstrap/Alert';
+import MenuBar from './MenuBar'
 import {cl,constant,openWebSocket,getTime,getTimeMs,checkCRC,
   msecsToDisplayDate,initUsersWs,sendUsersWs,wsTrans} from '../utils/utils'
 
@@ -10,6 +15,7 @@ class CreateAccount extends React.Component{
       name:"Gene Knight",
       email:"GeneKnight4@GMail.com",
       password:"fremont",
+      msgText:"",
     }
     this.loadInfo()
   }
@@ -68,41 +74,51 @@ class CreateAccount extends React.Component{
   render(){
     let st=this.state
     return(
-      <div style={{padding:20}}>
-      <h3>Reset Password</h3>
-      <table><tbody>
+      <div>
+        <MenuBar/>
+        <div style={{width:500, padding:20,backgroundColor:"white",
+          margin:"auto",top:200,boxShadow:"10px 10px 10px #C88",
+          borderRadius:10,position:"relative"
+        }}>
+        <h3>Reset Password</h3>
+        <table><tbody>
 
-      <tr><td>
-        <label htmlFor="name">Name:</label>
-      </td><td>{st.name}
-      </td></tr>
+        <tr><td>
+          <label htmlFor="name">Name:</label>
+        </td><td>{st.name}
+        </td></tr>
 
-      <tr><td>
-        <label htmlFor="email">Email:</label>
-      </td><td>{st.email}
-      </td></tr>
+        <tr><td>
+          <label htmlFor="email">Email:</label>
+        </td><td>{st.email}
+        </td></tr>
+        </tbody></table>
 
-      <tr><td>
-        <label htmlFor="password">Password:</label>
-      </td><td>
-        <input id="password" type="text" value={st.password} onChange={e=>this.onChange(
-          "password",{password:e.currentTarget.value})}/>
-      </td></tr>
-
-      <tr style={{display:(st.showMsg)?"block":"none"}}><td colSpan="2">
-
-      </td></tr>
-      <tr><td colSpan="2">
-      <button type="button" onClick={e=>this.onChange("resetPassword",{})}>
-      Reset Password</button>
-      </td></tr>
-      <tr><td colSpan="2">
-      <Link to="/login.html">Login</Link>
-      </td></tr>
-      <tr><td colSpan="2">
-      <Link to="/forgotpassword.html">Forgot Password</Link>
-      </td></tr>
-      </tbody></table>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>New Password:</Form.Label>
+              <Form.Control
+              id="password"
+              type="password"
+              placeholder="me@here.com"/>
+            </Form.Group>
+            <Alert variant={"primary"}
+              show={st.msgText.length>0}>
+              {st.msgText}
+            </Alert>
+            <Form.Group className="mb-3">
+              <Button variant="primary"
+              onClick={e=>this.onChange("resetPassword",{})}
+              >Reset Password</Button>{' '}
+            </Form.Group>
+            <Form.Group className="mb-3">
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Nav.Link as={Link} to="/login.html">Login</Nav.Link>
+              <Nav.Link as={Link} to="/forgotpassword.html">Forgot Password</Nav.Link>
+            </Form.Group>
+          </Form>
+        </div>
       </div>
     )
   }

@@ -1,6 +1,7 @@
 var cl = console.log
 var globs={
-  webSocket:{}
+  webSocket:{},
+  login:null,
 
 }
 
@@ -36,8 +37,6 @@ var onOpen = (r, e)=>{
   let gws=globs.webSocket// this needs to be redone
   gws.open=true
   r(true)
-  gws.res.forEach(re=>{re(true)})// activate the list of responses
-  delete gws.res
 }
 
 function onClose(e){
@@ -67,7 +66,9 @@ var openWebSocket=(uri,onData)=>{// this is for both
 //   cl("open web")
   let gws=globs.webSocket
   return new Promise((r,e)=>{
-    if(gws.open){r(true)}else{
+    if(gws.open){
+      cl("returnig")
+      r(true)}else{
       if(gws.res){gws.res.push(r); return}// add it to the list of responses
 //       cl("do connect")
       gws.res=[r]// create the list of responses
@@ -127,7 +128,17 @@ var onData=(msg)=>{
 var usersWs
 
 var initUsersWs=async()=>{
-    return await openWebSocket(constant.wsUsersUrl,onData)
+  await openWebSocket(constant.wsUsersUrl,onData)
+//   cl("initting")
+//   console.trace()
+//   return new Promise((r,e)=>{
+//     openWebSocket(constant.wsUsersUrl,onData).then(r2=>{
+//       cl("got")
+//       r(true)
+//     })
+//   })
+//     cl("awaited")
+//     return
 }
 
 var sendUsersWs=async(msg)=>{
@@ -139,6 +150,7 @@ var wsTransKey=0
 var wsTransCallbacks={}
 
 var wsTrans=async(wsId,parms)=>{// parms:{cmd, uri, method, sessionId, body}
+if(!globs.webSocket.open){await initUsersWs()}
   return new Promise((r,e)=>{
     if(wsId=="users"){
       wsTransCallbacks[wsTransKey]=r
@@ -148,6 +160,35 @@ var wsTrans=async(wsId,parms)=>{// parms:{cmd, uri, method, sessionId, body}
   })
 }
 
+globs.events = (function(){
+  var topics = {};
+  var hOP = topics.hasOwnProperty;
+  return {
+    subscribe: function(topic, listener) {
+      if(!listener){cl(`Subscribe error, topic: ${topic}`)}
+      // Create the topic's object if not yet created
+      if(!hOP.call(topics, topic)) topics[topic] = [];
+
+      // Add the listener to queue
+      var index = topics[topic].push(listener) -1;
+
+      // Provide handle back for removal of topic
+      return {
+        remove: function() {
+          delete topics[topic][index];
+        }
+      };
+    },
+    publish: async function(topic, info) {
+      if(!hOP.call(topics, topic)) return;
+      // Cycle through topics queue, fire!
+      for(let i=0;i<topics[topic].length;i++){
+        let item=topics[topic][i]
+        if(item){await item(info !== undefined ? info : {});}
+      }
+    }
+  };
+})();
 
 // let res=await wsTrans("usa", {cmd: "cRest", uri: "/s/controllerEvents",
 //       method: "retrieve", sessionId: globs.userData.session.sessionId,

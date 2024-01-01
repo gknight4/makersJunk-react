@@ -1,21 +1,22 @@
 import React from 'react';
-import ReCAPTCHA from "react-google-recaptcha";
 import {Link} from 'react-router-dom'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button';
 import Nav from 'react-bootstrap/Nav';
 import Alert from 'react-bootstrap/Alert';
 import MenuBar from './MenuBar'
-import {cl,constant,openWebSocket,getTime,getTimeMs,checkCRC,
+import {cl,globs,constant,openWebSocket,getTime,getTimeMs,checkCRC,
   msecsToDisplayDate,initUsersWs,sendUsersWs,wsTrans} from '../utils/utils'
 
-class CreateAccount extends React.Component{
+class Account extends React.Component{
   constructor(props) {
     super(props);
+    cl(globs)
+    let user=globs.login
     this.state={
-      name:"Gene Knight",
-      email:"GeneKnight4@GMail.com",
-      password:"fremont",
+      name:user?.name||"",
+      email:user?.email||"",
+      password:"",
       msgColor:"",
       msgText:"",
     }
@@ -49,23 +50,22 @@ class CreateAccount extends React.Component{
       case "password":
         this.setState(vals)
         break;
-      case "createAccount":
-        this.createAccount()
+      case "update":
+        this.updateAccount()
         break;
     }
   }
 
-  createAccount=async()=>{
+  updateAccount=async()=>{
     let st=this.state
     let user={
       name:st.name,
       email:st.email,
       password:st.password,
-      recaptchaResponse:st.recaptchaResponse,
-
+      userId:globs.login.userId,
+      info:true,
     }
-    cl(user)
-    let resp=await wsTrans("users",{uri:"/o/createaccount",method:"create",body:user})
+    let resp=await wsTrans("users",{uri:"/o/createaccount",method:"update",body:user})
     cl(resp)
     if(resp.result=="userExists"){
       this.setState({
@@ -73,18 +73,7 @@ class CreateAccount extends React.Component{
         msgText:"That user already has an account",
       })
     }
-    if(resp.result=="ok"){
-      this.setState({
-        msgColor:"#880000",
-        msgText:"That user already has an account",
-      })
 
-    }
-
-  }
-
-  onReCaptcha=(e)=>{
-    this.setState({recaptchaResponse: e})
   }
 
   render(){
@@ -97,7 +86,7 @@ class CreateAccount extends React.Component{
           margin:"auto",top:200,boxShadow:"10px 10px 10px #C88",
           borderRadius:10,position:"relative"
         }}>
-        <h3>Create Account</h3>
+        <h3>Update Account</h3>
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Name:</Form.Label>
@@ -128,22 +117,10 @@ class CreateAccount extends React.Component{
               show={st.msgText.length>0}>
               {st.msgText}
             </Alert>
-            <div className="recaptcha-wrapper">
-              <div className="recaptcha-container">
-                <ReCAPTCHA
-                sitekey="6Ld3ekIpAAAAAOodF4fA8A-Kc3hshlEGap6ExH2B"
-                onChange={this.onReCaptcha}
-                />
-              </div>
-            </div>
             <Form.Group className="mb-3">
               <Button variant="primary"
-              onClick={e=>this.onChange("createAccount",{})}
-              >Create Account</Button>{' '}
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Nav.Link as={Link} to="/login.html">Login</Nav.Link>
-              <Nav.Link as={Link} to="/forgotpassword.html">Forgot Password</Nav.Link>
+              onClick={e=>this.onChange("update",{})}
+              >Update</Button>{' '}
             </Form.Group>
           </Form>
         </div>
@@ -152,4 +129,4 @@ class CreateAccount extends React.Component{
   }
 }
 
-export default CreateAccount;
+export default Account;

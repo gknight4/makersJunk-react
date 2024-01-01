@@ -1,4 +1,5 @@
 import React from 'react';
+import MenuBar from './MenuBar'
 import {cl,constant,openWebSocket,getTime,getTimeMs,checkCRC,
   msecsToDisplayDate} from '../utils/utils'
 
@@ -345,10 +346,19 @@ recvbytes is trimmed on the left, and the ind goes back to 0.
 
   render(){
 //     cl(this.mounted)
+    let st=this.state
+    let wid=0.9*st.scrWidth
+    let hgt=1000
     return(
-      <div style={{padding:20}}>Modbus
-      {this.showModbus()}
-      {this.showTimeLine()}
+      <div>
+        <MenuBar/>
+        <div style={{width:wid, height: hgt, padding:20,backgroundColor:"white",
+          margin:"auto",top:50,boxShadow:"10px 10px 10px #C88",
+          borderRadius:10,position:"relative"
+        }}>
+        {this.showModbus()}
+        {this.showTimeLine()}
+        </div>
       </div>
     )
   }

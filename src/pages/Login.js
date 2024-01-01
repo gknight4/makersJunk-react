@@ -1,6 +1,11 @@
 import React from 'react';
 import {Link} from 'react-router-dom'
-import {cl,constant,openWebSocket,getTime,getTimeMs,checkCRC,
+import Form from 'react-bootstrap/Form'
+import Button from 'react-bootstrap/Button';
+import Nav from 'react-bootstrap/Nav';
+import Alert from 'react-bootstrap/Alert';
+import MenuBar from './MenuBar'
+import {cl,constant,globs,openWebSocket,getTime,getTimeMs,checkCRC,
   msecsToDisplayDate,initUsersWs,wsTrans} from '../utils/utils'
 // import bcrypt from 'bcrypt'
 
@@ -10,22 +15,30 @@ class Login extends React.Component{
 //     cl(props)
 //     cl(window.location.href)
     this.state={
-      email:"GeneKnight4@GMail.com",
-      password:"fremont",
+      email:"",
+      password:"",
+      rememberMe:true,
       msgColor:"",
+      alertType:"danger",
       msgText:"",
+      loginResp:"",
     }
     this.loadInfo()
   }
 
   onChange=(type,vals)=>{
+//     cl(type,vals)
     switch(type){
       case "email":
       case "password":
+      case "rememberMe":
         this.setState(vals)
         break;
       case "login":
         this.login()
+        break;
+      case "sendActivate":
+        this.sendActivate()
         break;
     }
   }
@@ -33,23 +46,31 @@ class Login extends React.Component{
   loadInfo=async()=>{
     await initUsersWs()
     let url=window.location.href
+    cl(url)
     let parts=url.split("?")
     if(parts.length>1){
       cl("got query")
       let parts2=parts[1].split("=")
       let activate={activate:parts2[1]}
-      cl(activate)
       let resp=await wsTrans("users",{uri:"/o/login",method:"update",body:activate})
       if(resp.result=="ok"){
         this.setState({
-          msgColor:"#008800",
+          alertType:"primary",
           msgText:"Thank you for Activating. Please Login",
         })
       }
-      cl(resp)
     }
-    cl("loadInfo")
-    cl("o9pen")
+  }
+
+  sendActivate=async()=>{
+    let st=this.state
+    cl("send activate")
+    let user={
+      email:st.email,
+      activate:true,
+    }
+    let resp=await wsTrans("users",{uri:"/o/createaccount",method:"create",body:user})
+
   }
 
   login=async()=>{
@@ -57,60 +78,121 @@ class Login extends React.Component{
     let user={
       email:st.email,
       password:st.password,
+      rememberMe:st.rememberMe,
     }
     let resp=await wsTrans("users",{uri:"/o/login",method:"create",body:user})
-    if(resp.result=="notFound"){
-      this.setState({
-        msgColor:"#880000",
+//     cl(resp)
+    let resps={
+      notActivated:{
+        alertType:"warning",
+        msgText:"That user is not activated",
+        loginResp:resp.result,
+      },
+      notFound:{
+        alertType:"danger",
         msgText:"I can't find that User / PW combo",
-      })
-
-    }else{
-      this.setState({msgText:""})
+        loginResp:resp.result,
+      },
+      ok:{
+        alertType:"primary",
+        msgText:"",
+        loginResp:resp.result,
+      },
     }
-    cl(resp)
+    if(resp.result=="ok"){
+      let login={
+        name:resp.name,
+        userId:resp.userId,
+        email:st.email,
+        password:st.password,
+        rememberMe:st.rememberMe,
+        sessionId:resp.sessionId,
+      }
+      let func=(st.rememberMe)?localStorage:sessionStorage
+      func.setItem("login",JSON.stringify(login))
+      globs.login=login
+      globs.events.publish("login",login)
+//       globs.sessionId=resp.sessionId
+//       globs.loggedIn=true
+    }
+    this.setState(resps[resp.result])
+//     if(resp.result=="notFound"){
+//       this.setState({
+//         alertType:"danger",
+//         msgText:"I can't find that User / PW combo",
+//       })
+//     }
+//     if(resp.result=="notFound"){
+//       this.setState({
+//       })
+//
+//     }else{
+//       this.setState({msgText:""})
+//     }
+//     cl(resp)
   }
 
   render(){
     let st=this.state
     let msgStyle={display:(st.msgText)?"table-row":"none",color:st.msgColor}
     return(
-      <div style={{padding:20}}>
-      <h3>Login</h3>
-      <table><tbody>
-      <tr>
-      <td>
-        <label htmlFor="emailInput">Email:</label>
-      </td>
-      <td>
-        <input id="emailInput" type="text" value={st.email} onChange={e=>this.onChange(
-          "email",{email:e.currentTarget.value})}/>
-      </td>
-      </tr>
-      <tr>
-      <td>
-        <label htmlFor="passwordInput">Password:</label>
-      </td>
-      <td>
-        <input id="passwordInput" type="password" encrypt="sha1" value={st.password} onChange={e=>this.onChange(
-          "password",{password:e.currentTarget.value})}/>
-      </td></tr>
-
-      <tr style={msgStyle}><td colSpan="2">
-      {st.msgText}
-      </td></tr>
-
-      <tr><td colSpan="2">
-      <button type="button" onClick={e=>this.onChange("login",{})}>
-      Login</button>
-      </td></tr>
-      <tr><td colSpan="2">
-      <Link to="/createaccount.html">Create Account</Link>
-      </td></tr>
-      <tr><td colSpan="2">
-      <Link to="/forgotpassword.html">Forgot Password</Link>
-      </td></tr>
-      </tbody></table>
+      <div>
+        <MenuBar/>
+        <div style={{width:500, padding:20,backgroundColor:"white",
+          margin:"auto",top:200,boxShadow:"10px 10px 10px #C88",
+          borderRadius:10,position:"relative"
+        }}>
+          <h3>Login</h3>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Email:</Form.Label>
+              <Form.Control
+                id="email"
+                type="email"
+//                 placeholder="me@here.com"
+                value={st.email}
+                onChange={e=>this.onChange("email",{email:e.currentTarget.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Password:</Form.Label>
+              <Form.Control
+              id="password"
+              type="password"
+//               placeholder="me@here.com"
+              value={st.password}
+              onChange={e=>this.onChange("password",{password:e.currentTarget.value})}
+              />
+            </Form.Group>
+            <Alert variant={st.alertType}
+              show={st.msgText.length>0}>
+              {st.msgText}
+            </Alert>
+            <Form.Group className="mb-3">
+              <Button variant="primary"
+              onClick={e=>this.onChange("login",{})}
+              >Login</Button>{' '}
+              <Button variant="primary"
+              style={{display:(st.loginResp=="notActivated")?"inline-block":"none"}}
+              show="false"
+              onClick={e=>this.onChange("sendActivate",{})}
+              >Re-Send Activation Email</Button>{' '}
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Check // prettier-ignore
+                type="switch"
+                id="custom-switch"
+                label="Remember Me"
+                checked={st.rememberMe}
+                onChange={e=>this.onChange("rememberMe",{rememberMe:e.currentTarget.checked})}
+            />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Nav.Link as={Link} to="/createaccount.html">Create Account</Nav.Link>
+              <Nav.Link as={Link} to="/forgotpassword.html">Forgot Password</Nav.Link>
+            </Form.Group>
+          </Form>
+        </div>
       </div>
     )
   }
