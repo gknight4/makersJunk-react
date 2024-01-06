@@ -8,14 +8,18 @@ import ForgotPassword from './pages/ForgotPassword'
 import Login from './pages/Login'
 import ResetPassword from './pages/ResetPassword'
 import Modbus from './pages/Modbus'
+import DeviceTypes from './pages/DeviceTypes'
+import Busses from './pages/Busses'
+import Monitors from './pages/Monitors'
 import Account from './pages/Account'
 import{
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom"
-import {cl, initUsersWs} from './utils/utils'
+import {cl, init} from './utils/utils'
 import './App.css';
-
+// import { createBrowserHistory } from 'history';
+// const history=createBrowserHistory();
 const router=createBrowserRouter([
 // {
 //   path:"/",
@@ -57,6 +61,9 @@ const router=createBrowserRouter([
   path:"/modbus.html",
   element:<Modbus/>,
 },
+{path:"/devicetypes.html",element:<DeviceTypes/>},
+{path:"/busses.html",element:<Busses/>},
+{path:"/monitors.html",element:<Monitors/>},
 
 ])
 
@@ -68,9 +75,10 @@ function App() {
 //   backgroundColor:"red"
 //   initUsersWs()
   cl("restart app")
+  init()
   return (
     <div style={{height:"100vh",backgroundImage:"/none.jpg"}}>
-        <RouterProvider router={router} />
+        <RouterProvider router={router}/>
     </div>
   );
 }

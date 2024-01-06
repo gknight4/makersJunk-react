@@ -142,7 +142,7 @@ var initUsersWs=async()=>{
 }
 
 var sendUsersWs=async(msg)=>{
-  cl("send user ws")
+//   cl("send user ws")
   usersWs.send(msg)
 }
 
@@ -190,13 +190,32 @@ globs.events = (function(){
   };
 })();
 
-// let res=await wsTrans("usa", {cmd: "cRest", uri: "/s/controllerEvents",
-//       method: "retrieve", sessionId: globs.userData.session.sessionId,
-//       body: {}})
+function getRandomString(len){
+  let bLen=Math.ceil(6*len/8)
+  let array= new Uint8Array(bLen);
+  crypto.getRandomValues(array);
+  let str=""
+  array.forEach(a=>{
+    str+=String.fromCharCode(a)
+  })
+  return btoa(str).substr(0, len)// substitutes $,@ for /,+
+    .replace(/\//g, "+")// tried ! and # - no dice!, no '_', '@',
+    .replace(/\+/g, "*")// was '@'
+}
+
+var visibilityChange=()=>{
+  globs.events.publish("visibilityChange",document.visibilityState)
+}
+
+function init(){
+  let loginStr=sessionStorage.getItem("login")
+  globs.login=JSON.parse(loginStr)
+  document.addEventListener('visibilitychange',visibilityChange)
+}
 
 
 
 
 export {cl,constant,globs,openWebSocket,getTime,checkCRC,getTimeMs,msecsToDisplayDate,
-  initUsersWs,sendUsersWs,wsTrans
+  initUsersWs,sendUsersWs,wsTrans,getRandomString,init,
 }

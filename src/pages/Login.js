@@ -5,13 +5,14 @@ import Button from 'react-bootstrap/Button';
 import Nav from 'react-bootstrap/Nav';
 import Alert from 'react-bootstrap/Alert';
 import MenuBar from './MenuBar'
+import {withRouter} from './withRouter'
 import {cl,constant,globs,openWebSocket,getTime,getTimeMs,checkCRC,
   msecsToDisplayDate,initUsersWs,wsTrans} from '../utils/utils'
-// import bcrypt from 'bcrypt'
 
 class Login extends React.Component{
   constructor(props) {
     super(props);
+    this.testNav=this.testNav.bind(this);
 //     cl(props)
 //     cl(window.location.href)
     this.state={
@@ -24,6 +25,10 @@ class Login extends React.Component{
       loginResp:"",
     }
     this.loadInfo()
+  }
+
+  testNav=()=>{
+    this.props.navigate('/Home.html')
   }
 
   onChange=(type,vals)=>{
@@ -46,7 +51,7 @@ class Login extends React.Component{
   loadInfo=async()=>{
     await initUsersWs()
     let url=window.location.href
-    cl(url)
+//     cl(url)
     let parts=url.split("?")
     if(parts.length>1){
       cl("got query")
@@ -104,32 +109,20 @@ class Login extends React.Component{
         name:resp.name,
         userId:resp.userId,
         email:st.email,
-        password:st.password,
+//         password:st.password,
         rememberMe:st.rememberMe,
         sessionId:resp.sessionId,
       }
-      let func=(st.rememberMe)?localStorage:sessionStorage
-      func.setItem("login",JSON.stringify(login))
+//       let func=(st.rememberMe)?localStorage:sessionStorage
+      let loginStr=JSON.stringify(login)
+      sessionStorage.setItem("login",loginStr)
+      if(st.rememberMe){localStorage.setItem("login",loginStr)}
+//       func.setItem("login",)
       globs.login=login
-      globs.events.publish("login",login)
-//       globs.sessionId=resp.sessionId
-//       globs.loggedIn=true
+//       globs.events.publish("login",login)
+      this.props.navigate('/Home.html')
     }
     this.setState(resps[resp.result])
-//     if(resp.result=="notFound"){
-//       this.setState({
-//         alertType:"danger",
-//         msgText:"I can't find that User / PW combo",
-//       })
-//     }
-//     if(resp.result=="notFound"){
-//       this.setState({
-//       })
-//
-//     }else{
-//       this.setState({msgText:""})
-//     }
-//     cl(resp)
   }
 
   render(){
@@ -157,9 +150,8 @@ class Login extends React.Component{
             <Form.Group className="mb-3">
               <Form.Label>Password:</Form.Label>
               <Form.Control
-              id="password"
+              id="current-password"
               type="password"
-//               placeholder="me@here.com"
               value={st.password}
               onChange={e=>this.onChange("password",{password:e.currentTarget.value})}
               />
@@ -198,4 +190,4 @@ class Login extends React.Component{
   }
 }
 
-export default Login;
+export default withRouter(Login);

@@ -16,7 +16,7 @@ class CreateAccount extends React.Component{
       name:"Gene Knight",
       email:"GeneKnight4@GMail.com",
       password:"fremont",
-      msgColor:"",
+      alertType:"",
       msgText:"",
     }
     this.loadInfo()
@@ -69,14 +69,14 @@ class CreateAccount extends React.Component{
     cl(resp)
     if(resp.result=="userExists"){
       this.setState({
-        msgColor:"#880000",
+        alertType:"warning",
         msgText:"That user already has an account",
       })
     }
     if(resp.result=="ok"){
       this.setState({
-        msgColor:"#880000",
-        msgText:"That user already has an account",
+        alertType:"success",
+        msgText:"I sent you an Activation email",
       })
 
     }
@@ -124,7 +124,7 @@ class CreateAccount extends React.Component{
               type="text"
               />
             </Form.Group>
-            <Alert variant={"primary"}
+            <Alert variant={st.alertType}
               show={st.msgText.length>0}>
               {st.msgText}
             </Alert>

@@ -4,7 +4,7 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
-import history from '../history'
+import {withRouter} from './withRouter'
 import 'bootstrap/dist/css/bootstrap.css';
 import {cl,globs} from '../utils/utils'
 
@@ -12,21 +12,23 @@ import {cl,globs} from '../utils/utils'
 class MenuBar extends React.Component{
   constructor(props) {
     super(props);
+//     cl("menubar start")
+//     cl(globs)
     this.state={
       userName:"Sign In",
     }
-    this.subscribe_login=globs.events.subscribe("login", this.loginEvent)
+//     this.subscribe_login=globs.events.subscribe("login", this.loginEvent)
   }
 
-  componentWillUnmount=()=>{
-    this.subscribe_login.remove()
-  }
+//   componentWillUnmount=()=>{
+//     this.subscribe_login.remove()
+//   }
 
 
-  loginEvent=(data)=>{
-//     cl(data)
-    this.setState({loggedIn:true,userName:data.name})
-  }
+//   loginEvent=(data)=>{
+// //     cl(data)
+//     this.setState({loggedIn:true,userName:data.name})
+//   }
 
   logOut=()=>{
     cl("logout")
@@ -34,6 +36,7 @@ class MenuBar extends React.Component{
     this.setState({loggedIn:false})
     localStorage.removeItem("login")
     sessionStorage.removeItem("login",null)
+    this.props.navigate("/login.html")
   }
 
   onChange=(type,vals)=>{
@@ -48,8 +51,10 @@ class MenuBar extends React.Component{
 
   userDropdown=()=>{
     let st=this.state
-    let userName=(st.loggedIn)?st.userName:"Sign In"
-    if(st.loggedIn){
+    let userName=(globs.login)?globs.login.name:"Sign In"
+//     cl(globs.login)
+//     cl(userName)
+    if(globs.login){
       return(
         <NavDropdown title={userName} id="basic-nav-dropdown">
           <NavDropdown.Item onClick={e=>this.onChange("logOut")}>Log Out</NavDropdown.Item>
@@ -84,6 +89,9 @@ class MenuBar extends React.Component{
                 <Nav className="me-auto">
                   <Nav.Link href="#home">Home</Nav.Link>
                   <Nav.Link href="modbus.html">Modbus</Nav.Link>
+                  <Nav.Link as={Link} to="/devicetypes.html">Device Types</Nav.Link>
+                  <Nav.Link as={Link} to="/busses.html">Busses</Nav.Link>
+                  <Nav.Link as={Link} to="/monitors.html">Monitors</Nav.Link>
                   <NavDropdown title="Dropdown" id="basic-nav-dropdown">
                     <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
                     <NavDropdown.Item href="#action/3.2">
@@ -110,4 +118,4 @@ class MenuBar extends React.Component{
   }
 }
 
-export default MenuBar;
+export default withRouter(MenuBar);
